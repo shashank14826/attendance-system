@@ -44,9 +44,11 @@ export default function AttendanceSummary() {
 
   const fetchAttendanceSummary = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
       const { data, error } = await supabase
         .from('attendance_summary')
-        .select('*');
+        .select('*')
+        .eq('student_id', user.id);
 
       if (error) throw error;
       setSummaryData(data);

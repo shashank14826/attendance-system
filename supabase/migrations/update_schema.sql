@@ -29,8 +29,9 @@ CREATE TABLE attendance_records (
     UNIQUE(student_id, subject_id, date)
 );
 
--- Create attendance_summary view for quick calculations
-CREATE OR REPLACE VIEW attendance_summary AS
+-- Drop and recreate attendance_summary view with security
+DROP VIEW IF EXISTS attendance_summary;
+CREATE VIEW attendance_summary AS
 SELECT 
     ar.student_id,
     ar.subject_id,
@@ -44,6 +45,12 @@ SELECT
     ) as attendance_percentage
 FROM attendance_records ar
 JOIN subjects s ON ar.subject_id = s.id
+WHERE EXISTS (
+    SELECT 1 
+    FROM student_subjects ss 
+    WHERE ss.student_id = ar.student_id 
+    AND ss.subject_id = ar.subject_id
+)
 GROUP BY ar.student_id, ar.subject_id, s.name, s.code;
 
 -- Add RLS policies
